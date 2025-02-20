@@ -11,6 +11,8 @@ import { PasswordService } from 'src/app/services/password.service';
 })
 export class PasswordAddComponent implements OnInit {
   passwordForm: FormGroup;
+  isUpdate = false;
+  id = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -29,6 +31,8 @@ export class PasswordAddComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
+      this.isUpdate = true;
+      this.id = +id;
       this.passwordService.getDecryptedPassword(+id).subscribe((password) => {
         this.passwordForm.patchValue(password);
       });
@@ -37,6 +41,18 @@ export class PasswordAddComponent implements OnInit {
 
   onSubmit() {
     if (this.passwordForm.valid) {
+      console.log(this.passwordForm.value);
+      if (this.isUpdate) {
+        this.passwordService
+          .updatePassword(this.id, this.passwordForm.value)
+          .subscribe(() => {
+            this.snackBar.open('Credentials Updated Successfully! ', 'Close', {
+              duration: 3000,
+            });
+            this.router.navigate(['/']);
+          });
+        return;
+      }
       this.passwordService
         .addPassword(this.passwordForm.value)
         .subscribe(() => {
